@@ -31,7 +31,7 @@ func main() {
 }
 
 func help() {
-	fmt.Print("Comandos: mst [help] [list] [status] [init]")
+	fmt.Println("Comandos: mst [help] [list] [status] [init]")
 	fmt.Println("init - Para iniciar um novo repositorio no diretorio local")
 	fmt.Println("list - Lista os arquivos e pastas do diretorio atual")
 	fmt.Println("status - Mostra o status do repositorio atual")
