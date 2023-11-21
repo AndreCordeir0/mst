@@ -1,4 +1,4 @@
-module github.com/AndreCordeir0/command-line
+module github.com/AndreCordeir0/mst
 
 go 1.21.3
 
