@@ -1,0 +1,1 @@
+go build -o mst main.go
