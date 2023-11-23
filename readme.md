@@ -48,4 +48,4 @@ mst help
 e ver todos os comandos disponiveis :)
 
 
-![Imagem do terminal](image.png)
+![Imagem do terminal](image_readme.png)
