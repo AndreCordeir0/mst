@@ -46,3 +46,6 @@ mst help
 ```
 
 e ver todos os comandos disponiveis :)
+
+
+![Imagem do terminal](image.png)
