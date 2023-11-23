@@ -27,6 +27,8 @@ func main() {
 			listarRepositorios()
 		case "status":
 			getStatus()
+		case "add":
+			addFile()
 		default:
 			fmt.Println("Comando invalido")
 			help()
@@ -48,7 +50,7 @@ func iniciarRepositorio() {
 	_, errStatus := os.Stat(pathMst)
 
 	if errStatus != nil {
-		fmt.Println("pasta [.mst] nao encontrada")
+		fmt.Println("pasta [.mst] não encontrada")
 		fmt.Println("Criando repositorio em: ", diretorioAtual)
 		os.Mkdir(pathMst, os.ModePerm)
 	} else {
@@ -102,13 +104,30 @@ func getStatus() {
 	// stringsSplit := strings.Split(diffFileString, "\n")
 	// fmt.Println(stringsSplit[1])
 	dir, _ := os.ReadDir("./")
+	var arquivosAdicionados []string
+	var arquivosNaoAdicionados []string
 	for _, s := range dir {
 		if s.IsDir() {
 			continue
 		}
 		hashArquivo, _ := calculateFileHash("./" + s.Name())
 		if !strings.Contains(diffFileString, hashArquivo) {
-			fmt.Println(color.RedString("Arquivo nao adicionado: %s", s.Name()))
+			arquivosNaoAdicionados = append(arquivosNaoAdicionados, color.RedString("	%s", s.Name()))
+		} else {
+			arquivosAdicionados = append(arquivosAdicionados, color.GreenString("	%s", s.Name()))
+		}
+	}
+	if len(arquivosAdicionados) != 0 {
+		fmt.Println("Arquivos adicionados: ")
+		for _, s := range arquivosAdicionados {
+			fmt.Println(s)
+		}
+
+	}
+	if len(arquivosNaoAdicionados) != 0 {
+		fmt.Println("Arquivos não adicionados: ")
+		for _, s := range arquivosNaoAdicionados {
+			fmt.Println(s)
 		}
 	}
 }
@@ -135,25 +154,38 @@ func criarArquivo(nomeArquivo string) (*os.File, error) {
 	return fileCreated, nil
 }
 
-func getFileBoilerplate() ([]byte, error) {
-	byteText := []byte(MST_ADD + MST_NOT_ADD)
-	dir, _ := os.ReadDir("./")
-	for _, d := range dir {
-		if d.IsDir() {
-			continue
-		}
-		hashArquivo, err := calculateFileHash("./" + d.Name())
-		if err != nil {
-			fmt.Println("Erro ao calcular hash do arquivo: ", err)
-			return nil, err
-		}
-		fmt.Println("Nome do arquivo: %s Hash do arquivo %s ", d.Name(), hashArquivo)
-		byteText = append(byteText, []byte(hashArquivo)...)
-		byteText = append(byteText, []byte("\n")...)
-		fmt.Println("\n")
+func addFile() {
+	if len(os.Args) < 3 {
+		fmt.Println("Informe o caminho do arquivo")
+		os.Exit(1)
 	}
-	fmt.Println(dir)
-	return byteText, nil
+	filePath := strings.Trim(os.Args[2], " ")
+	_, err := os.Stat(filePath)
+	if err != nil {
+		fmt.Println("Arquivo não encontrado")
+		os.Exit(1)
+	}
+	hashArquivo, err := calculateFileHash(filePath)
+	if err != nil {
+		fmt.Println("Erro ao calcular hash do arquivo: ", err)
+		os.Exit(1)
+	}
+	fileData, errData := os.ReadFile("./.mst/diff.mst")
+	if errData != nil {
+		fmt.Println("Erro ao ler arquivo diff.mst")
+		os.Exit(1)
+	}
+	fileDataString := string(fileData)
+	if strings.Contains(fileDataString, hashArquivo) {
+		fmt.Println("Arquivo ja adicionado")
+		os.Exit(1)
+	}
+	file, _ := os.OpenFile("./.mst/diff.mst", os.O_APPEND|os.O_WRONLY, 0644)
+	appendString := append(fileData, []byte("\n")...)
+	appendString = append(appendString, []byte(hashArquivo)...)
+	file.Write(appendString)
+	file.Close()
+	fmt.Printf("Arquivo: %s adicionado com sucesso\n", filePath)
 }
 
 func removerPastaMst() {
